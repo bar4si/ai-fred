@@ -23,7 +23,8 @@ async function handleMessage(msg, botId, bots, db) {
             'INSERT INTO messages (whatsapp_id, from_number, body, is_from_me, bot_id) VALUES (?, ?, ?, ?, ?)',
             [msg.id.id, chatId, msg.body, msg.fromMe ? 1 : 0, botId]
         );
-        await pruneMessages(db, chatId, 50);
+        const messageLimit = parseInt(process.env.MESSAGE_LIMIT) || 50;
+        await pruneMessages(db, chatId, messageLimit);
     } catch (err) {
         // Silently fail DB errors during chat
     }

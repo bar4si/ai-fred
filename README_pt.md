@@ -59,11 +59,13 @@ O AI-Fred expõe uma **API REST Protegida** para controle externo e inclui um **
 ## 6. Comandos & Exemplos de Uso
 | Comando | Ação | Exemplo |
 | :--- | :--- | :--- |
-| `/ajuda` | Exibe o menu de comandos | `Usuário: /ajuda` |
-| `/fred [pergunta]` | Interação direta com a IA (Gemini) | `Usuário: /fred como você está?` |
+| `/ajuda` | Exibe o menu interativo de comandos | `Usuário: /ajuda` |
+| `/fred [pergunta]` | Interação direta com o Gemini | `Usuário: /fred quem é você?` |
+| `/sticker` | Converte imagem/vídeo em figurinha | `(legenda/resposta): /sticker` |
+| `/clima [cidade]` | Consulta o clima em tempo real | `Usuário: /clima São Paulo` |
+| `/resumo` | Resumo de chat gerado por IA | `Usuário: /resumo` |
 | `/audio [on/off]` | Ativa/desativa transcrição automática | `Usuário: /audio on` |
-| `/status` | Métricas de conexão e por bot | `Usuário: /status` |
-| `/sticker` | Converte imagem em figurinha | `(na legenda): /sticker` |
+| `/status` | Métricas de conexão e uptime por bot | `Usuário: /status` |
 
 ---
 

@@ -23,11 +23,14 @@ async function initializeBot(botId, database, ProviderClass) {
     // Isso permite trocar whatsapp-web.js por API Oficial sem mudar este arquivo.
     const provider = new ProviderClass(botId);
 
+    // Define a privacidade padrão (Privado por padrão se ADMIN_ONLY for true no .env)
+    const defaultPrivacy = process.env.ADMIN_ONLY === 'true' ? 1 : 0;
+
     bots[botId] = {
         provider,
         status: 'Iniciando...',
         lastStats: { messages: 0, contacts: 0 },
-        adminOnly: (await getBotSetting(db, botId, 'admin_only', 0)) === 1,
+        adminOnly: (await getBotSetting(db, botId, 'admin_only', defaultPrivacy)) === 1,
         transcriptionEnabled: (await getBotSetting(db, botId, 'transcription_enabled', 0)) === 1,
         qr: null
     };

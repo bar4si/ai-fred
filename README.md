@@ -59,11 +59,13 @@ AI-Fred exposes a **Secured REST API** for external control and includes a dedic
 ## 6. Commands & Usage Examples
 | Command | Action | Example |
 | :--- | :--- | :--- |
-| `/ajuda` | Displays the command menu | `User: /ajuda` |
-| `/fred [prompt]` | Direct AI interaction (Gemini) | `User: /fred how are you?` |
+| `/ajuda` | Displays the interactive command menu | `User: /ajuda` |
+| `/fred [prompt]` | Direct AI interaction with Gemini | `User: /fred who are you?` |
+| `/sticker` | Converts any image/video to a sticker | `(caption/reply): /sticker` |
+| `/clima [city]` | Real-time weather consultation | `User: /clima London` |
+| `/resumo` | AI-Powered summarization of recent chat | `User: /resumo` |
 | `/audio [on/off]` | Toggle automatic voice transcription | `User: /audio on` |
-| `/status` | Connection and per-bot metrics | `User: /status` |
-| `/sticker` | Convert image to sticker | `(on image caption): /sticker` |
+| `/status` | Connection and per-bot uptime metrics | `User: /status` |
 
 ---
 
