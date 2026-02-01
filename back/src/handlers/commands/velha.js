@@ -1,23 +1,17 @@
 const { createGame, getGame, deleteGame, checkWinner, renderBoard } = require('../../core/game-engine');
+const { getJid, resolveChatId, resolveSenderId } = require('../../utils/whatsapp');
 
 /**
  * Comando: /velha
- * Descrição: Jogo da Velha PvP puro. Exclusivo para DMs.
+ * Descrição: Jogo da Velha PvP puro para DMs.
  */
 module.exports = {
     name: '/velha',
+
     execute: async (msg, args, botId, bots) => {
         try {
-            const getJid = (id) => {
-                if (!id) return '';
-                return (typeof id === 'object' && id._serialized) ? id._serialized : String(id);
-            };
-
-            const contactId = getJid(msg.fromMe ? msg.to : msg.from);
-            const subCommand = args[0]?.toLowerCase();
-            const isGroup = contactId.endsWith('@g.us');
-
-            if (isGroup) {
+            const contactId = resolveChatId(msg);
+            if (contactId.endsWith('@g.us')) {
                 return msg.reply('💡 O Jogo da Velha agora é exclusivo para conversas privadas (DM).');
             }
 
@@ -25,7 +19,8 @@ module.exports = {
             if (!botInstance) return;
             const botJid = getJid(botInstance.info?.wid || botInstance.info?.me);
 
-            if (subCommand === 'sair' || subCommand === 'reset' || subCommand === 'stop') {
+            const subCommand = args[0]?.toLowerCase();
+            if (['sair', 'reset', 'stop'].includes(subCommand)) {
                 deleteGame(botId, contactId);
                 return msg.reply('🏳️ Partida encerrada.');
             }
@@ -34,54 +29,43 @@ module.exports = {
                 return msg.reply('⚠️ Já existe uma partida aqui! Use */velha reset* para recomeçar.');
             }
 
-            const playerX = contactId;
-            const playerO = botJid;
-
-            if (playerX === playerO) {
+            // Jogadores: Sempre Contato vs Dono
+            if (contactId === botJid) {
                 return msg.reply('😅 Você não pode jogar Tic-Tac-Toe contra si mesmo no chat.');
             }
 
-            // BUSCAR NOMES DOS JOGADORES
+            // Buscar nomes (Resolução paralela)
             const names = {};
             try {
-                const contactX = await botInstance.getContactById(playerX);
-                const contactO = await botInstance.getContactById(playerO);
-                names[playerX] = contactX.pushname || contactX.name || playerX.split('@')[0];
-                names[playerO] = contactO.pushname || contactO.name || playerO.split('@')[0];
+                const [contactX, contactO] = await Promise.all([
+                    botInstance.getContactById(contactId),
+                    botInstance.getContactById(botJid)
+                ]);
+                names[contactId] = contactX.pushname || contactX.name || contactId.split('@')[0];
+                names[botJid] = contactO.pushname || contactO.name || botJid.split('@')[0];
             } catch (e) {
-                names[playerX] = playerX.split('@')[0];
-                names[playerO] = playerO.split('@')[0];
+                names[contactId] = contactId.split('@')[0];
+                names[botJid] = botJid.split('@')[0];
             }
 
-            const game = createGame(botId, contactId, playerX, playerO, names);
+            const game = createGame(botId, contactId, contactId, botJid, names);
 
-            const text = `🎮 *Jogo da Velha: PvP*\n\n` +
-                `❌ ${names[playerX]}\n` +
-                `⭕ ${names[playerO]}\n\n` +
+            const boardText = `🎮 *Jogo da Velha: PvP*\n\n` +
+                `❌ ${names[contactId]}\n` +
+                `⭕ ${names[botJid]}\n\n` +
                 `Vez de ❌! Escolha (1-9):\n\n` +
                 renderBoard(game.board);
 
-            const mentionList = [playerX, playerO].filter(id => id && id !== botJid);
-
-            try {
-                return await msg.reply(text, { mentions: mentionList });
-            } catch (replyErr) {
-                return await msg.reply(text.replace(/@/g, ''));
-            }
+            await safeReply(msg, boardText, [contactId], botJid);
         } catch (err) {
-            console.error('[Game: /velha] Erro no execute:', err);
+            console.error('[Game: /velha] Erro fatal no execute:', err);
             return msg.reply('❌ Erro técnico ao iniciar o jogo.');
         }
     },
 
-    handleMove: async (msg, botId, bots, db) => {
+    handleMove: async (msg, botId, bots) => {
         try {
-            const getJid = (id) => {
-                if (!id) return '';
-                return (typeof id === 'object' && id._serialized) ? id._serialized : String(id);
-            };
-
-            const contactId = getJid(msg.fromMe ? msg.to : msg.from);
+            const contactId = resolveChatId(msg);
             const game = getGame(botId, contactId);
             if (!game || game.status !== 'active') return false;
 
@@ -91,7 +75,7 @@ module.exports = {
 
             const botInstance = bots[botId]?.provider?.client;
             const botJid = getJid(botInstance?.info?.wid || botInstance?.info?.me);
-            const actualSender = getJid(msg.fromMe ? botJid : (msg.author || msg.from));
+            const actualSender = resolveSenderId(msg, botJid);
 
             const currentPlayerId = game.players[game.turn];
 
@@ -106,12 +90,17 @@ module.exports = {
                 return true;
             }
 
+            // Executar Jogada
             game.board[idx] = game.turn;
             game.lastUpdate = Date.now();
 
-            let winner = checkWinner(game.board);
-            if (winner) return await finishGame(msg, botId, botJid, contactId, game, winner);
+            const winner = checkWinner(game.board);
+            if (winner) {
+                await announceResult(msg, botId, botJid, contactId, game, winner);
+                return true;
+            }
 
+            // Próximo Turno
             game.turn = game.turn === 'X' ? 'O' : 'X';
             const nextPlayerId = game.players[game.turn];
             const senderName = game.names[actualSender] || actualSender.split('@')[0];
@@ -121,13 +110,7 @@ module.exports = {
                 renderBoard(game.board) +
                 `Vez de ${nextPlayerName} (${game.turn === 'X' ? '❌' : '⭕'})!`;
 
-            const mentionList = [nextPlayerId, actualSender].filter(id => id && id !== botJid);
-
-            try {
-                await msg.reply(text, { mentions: mentionList });
-            } catch (err) {
-                await msg.reply(text.replace(/@/g, ''));
-            }
+            await safeReply(msg, text, [nextPlayerId, actualSender], botJid);
             return true;
         } catch (err) {
             console.error('[Game: /velha] Erro no handleMove:', err);
@@ -136,32 +119,33 @@ module.exports = {
     }
 };
 
-async function finishGame(msg, botId, botJid, contactId, game, winner) {
+/**
+ * Funções Auxiliares de UI (Privadas)
+ */
+
+async function announceResult(msg, botId, botJid, contactId, game, winner) {
+    let resultText = '';
+    if (winner === 'draw') {
+        resultText = '🤝 *Empate! Deu velha.*';
+    } else {
+        const winnerId = game.players[winner];
+        const winnerName = game.names[winnerId] || winnerId.split('@')[0];
+        resultText = `🏆 *Vitória de ${winnerName} (${winner === 'X' ? '❌' : '⭕'})!*`;
+    }
+
+    const finishers = Object.values(game.players);
+    await safeReply(msg, resultText + '\n\n' + renderBoard(game.board), finishers, botJid);
+    deleteGame(botId, contactId);
+}
+
+/**
+ * Envia uma resposta tratando falhas em menções e filtrando o bot
+ */
+async function safeReply(msg, text, mentionJids, botJid) {
     try {
-        let resultText = '';
-        if (winner === 'draw') {
-            resultText = '🤝 *Empate! Deu velha.*';
-        } else {
-            const winnerId = game.players[winner];
-            const winnerName = game.names[winnerId] || winnerId.split('@')[0];
-            resultText = `🏆 *Vitória de ${winnerName} (${winner === 'X' ? '❌' : '⭕'})!*`;
-        }
-
-        const mentionList = Object.values(game.players).filter(id => id && id !== botJid);
-
-        try {
-            await msg.reply(resultText + '\n\n' + renderBoard(game.board), {
-                mentions: mentionList
-            });
-        } catch (err) {
-            await msg.reply((resultText + '\n\n' + renderBoard(game.board)).replace(/@/g, ''));
-        }
-
-        deleteGame(botId, contactId);
-        return true;
-    } catch (err) {
-        console.error('[Game: /velha] Erro no finishGame:', err);
-        deleteGame(botId, contactId);
-        return true;
+        const mentions = mentionJids.filter(id => id && id !== botJid && typeof id === 'string');
+        return await msg.reply(text, { mentions });
+    } catch (e) {
+        return await msg.reply(text.replace(/@/g, ''));
     }
 }

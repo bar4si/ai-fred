@@ -1,49 +1,56 @@
 /**
  * Game Engine: Jogo da Velha
- * Gerencia o estado das partidas em memória.
+ * Gerencia o estado das partidas em memória de forma performática e segura.
  */
 
-const games = {}; // "botId:chatId" -> game state
+const games = new Map(); // "botId:chatId" -> game state
+
+// Intervalo de limpeza proativa (a cada 5 minutos limpa jogos com mais de 10 min de inatividade)
+setInterval(() => {
+    const now = Date.now();
+    for (const [key, game] of games.entries()) {
+        if (now - game.lastUpdate > 600000) {
+            console.log(`[GameEngine] Limpeza proativa: Partida encerrada por inatividade (${key})`);
+            games.delete(key);
+        }
+    }
+}, 300000);
 
 function createGame(botId, chatId, playerX, playerO, names = {}) {
     const key = `${botId}:${chatId}`;
-    games[key] = {
+    const gameState = {
         board: Array(9).fill(null),
         players: {
             X: playerX,
             O: playerO
         },
-        names: names, // { JID: "Nome" }
-        turn: 'X', // X sempre começa
+        names: names,
+        turn: 'X',
         lastUpdate: Date.now(),
         status: 'active'
     };
-    return games[key];
+    games.set(key, gameState);
+    return gameState;
 }
 
 function getGame(botId, chatId) {
     const key = `${botId}:${chatId}`;
-    // Limpar jogos inativos (mais de 10 min)
-    if (games[key] && Date.now() - games[key].lastUpdate > 600000) {
-        delete games[key];
-        return null;
-    }
-    return games[key];
+    return games.get(key) || null;
 }
 
 function deleteGame(botId, chatId) {
     const key = `${botId}:${chatId}`;
-    delete games[key];
+    games.delete(key);
 }
 
 function checkWinner(board) {
-    const lines = [
-        [0, 1, 2], [3, 4, 5], [6, 7, 8], // Linhas
-        [0, 3, 6], [1, 4, 7], [2, 5, 8], // Colunas
-        [0, 4, 8], [2, 4, 6]             // Diagonais
+    const winLines = [
+        [0, 1, 2], [3, 4, 5], [6, 7, 8],
+        [0, 3, 6], [1, 4, 7], [2, 5, 8],
+        [0, 4, 8], [2, 4, 6]
     ];
 
-    for (const [a, b, c] of lines) {
+    for (const [a, b, c] of winLines) {
         if (board[a] && board[a] === board[b] && board[a] === board[c]) {
             return board[a];
         }
@@ -53,6 +60,9 @@ function checkWinner(board) {
     return null;
 }
 
+/**
+ * Renderiza o tabuleiro usando emojis
+ */
 function renderBoard(board) {
     const emojis = {
         X: '❌',
@@ -69,4 +79,10 @@ function renderBoard(board) {
     return text;
 }
 
-module.exports = { createGame, getGame, deleteGame, checkWinner, renderBoard };
+module.exports = {
+    createGame,
+    getGame,
+    deleteGame,
+    checkWinner,
+    renderBoard
+};
