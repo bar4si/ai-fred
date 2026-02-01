@@ -41,20 +41,31 @@ async function handleCommand(msg, botId, bots, db) {
         const [cmd, ...args] = msg.body.trim().split(/\s+/);
         const executeFn = commands[cmd.toLowerCase()];
         if (executeFn) {
-            await delay(500, 1500);
-            await simulateTyping(msg, 2000);
-            await executeFn(msg, args, botId, bots, db);
-            return true;
+            try {
+                await delay(500, 1500);
+                await simulateTyping(msg, 2000);
+                await executeFn(msg, args, botId, bots, db);
+                return true;
+            } catch (err) {
+                console.error(`[Dispatcher] Erro ao executar comando ${cmd}:`, err);
+                await msg.reply('❌ Ocorreu um erro interno ao processar este comando.');
+                return true;
+            }
         }
     }
 
     // 2. Verificar Palavras-chave (Sem prefixo)
     const keywordFn = keywords[body];
     if (keywordFn) {
-        await delay(500, 1500);
-        await simulateTyping(msg, 1500);
-        await keywordFn(msg, botId, bots, db);
-        return true;
+        try {
+            await delay(500, 1500);
+            await simulateTyping(msg, 1500);
+            await keywordFn(msg, botId, bots, db);
+            return true;
+        } catch (err) {
+            console.error(`[Dispatcher] Erro ao executar palavra-chave ${body}:`, err);
+            return false;
+        }
     }
 
     return false;

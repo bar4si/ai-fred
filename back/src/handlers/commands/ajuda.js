@@ -11,6 +11,7 @@ module.exports = {
             `*/clima [cidade]* - Consulta o clima atual.\n` +
             `*/resumo* - Gera um resumo das mensagens recentes.\n` +
             `*/fred [pergunta]* - Conversa com a IA (Google Gemini).\n` +
+            `*/velha [bot/@marcar]* - Joga uma partida de Jogo da Velha.\n` +
             `*/audio [on/off]* - Ativa/desativa transcrição automática.\n` +
             `*/ajuda* - Mostra esta lista.`;
         await msg.reply(helpText);

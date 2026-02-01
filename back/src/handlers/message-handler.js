@@ -33,6 +33,11 @@ async function handleMessage(msg, botId, bots, db) {
     const isHandled = await handleCommand(msg, botId, bots, db);
     if (isHandled) return;
 
+    // 3. Game & Interaction State Handlers
+    // Verifica se o usuário está em uma partida de Jogo da Velha
+    const { handleMove: handleVelhaMove } = require('./commands/velha');
+    if (await handleVelhaMove(msg, botId, bots, db)) return;
+
     // 3. Audio Detection (Google Gemini Transcription)
     if (msg.type === 'ptt' || msg.type === 'audio') {
         try {

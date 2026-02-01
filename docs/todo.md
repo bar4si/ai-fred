@@ -37,7 +37,22 @@ Este arquivo rastreia o progresso técnico do bot AI-Fred.
 8.  **🛒 Lista de Compras Compartilhada:** Comando para adicionar/remover itens de uma lista persistente.
 9.  **🎲 Sorteador Avançado:** `/sorteio "Item 1, Item 2, Item 3"` para escolher um vencedor aleatoriamente.
 10. **🛡️ Gerador de Identidade:** `/fake` para gerar dados de teste (nome, CPF fictício, endereço) para desenvolvedores.
-11. **🎓 Assistente Educacional:** Fluxo de criação e coleta interativa de questionários para alunos, com salvamento automático de respostas.
+11. **🎓 Assistente Educacional:** Fluxo de criação e coleta interativa de questionários para alunos, com salvamento automático de respostas. [Em andamento]
+12. **🧠 Banco de Conhecimento RAG:** Permitir que o bot aprenda com PDFs ou documentos enviados para responder dúvidas específicas.
+13. **📅 Agendador de Postagens/Status:** Comando para programar mensagens que o bot deve postar no Status ou enviar para grupos em horários específicos.
+14. **🎙️ Voice-to-Command:** Comando que entende áudios curtos para executar tarefas (ex: mandar um áudio "Fred, figurinha").
+15. **🛡️ Anti-Scam:** Analisador de links recebidos para alertar sobre possíveis phishings ou golpes conhecidos.
+16. **📊 Dashboard Web Real-time:** Uma interface web moderna (Next.js) para visualizar logs e status graficamente.
+
+---
+
+## 🎮 Ideias de Jogos (Gaming)
+1.  **❓ Trivia/Quiz:** Desafios de perguntas e respostas em grupos com ranking de pontos.
+2.  **🪓 Forca (Hangman):** O clássico jogo da forca adaptado para o chat.
+3.  **❌ Jogo da Velha (Tic-Tac-Toe):** Partidas rápidas entre usuários ou contra o bot.
+4.  **🎭 RPG Narrativo com IA:** O Fred atua como Mestre de RPG, criando uma história dinâmica baseada nas escolhas do usuário.
+5.  **🧩 Palavra do Dia (Estilo Termo):** Um desafio diário onde todos os usuários tentam adivinhar a mesma palavra.
+6.  **🕵️ "Quem sou eu?":** A IA assume a persona de um personagem famoso e os usuários precisam adivinhar com perguntas de sim/não.
 
 ---
 
