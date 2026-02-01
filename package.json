@@ -7,7 +7,7 @@
     "doc": "docs"
   },
   "scripts": {
-    "start": "node src/index.js",
+    "start": "node back/index.js",
     "cleanup": "powershell -Command \"Get-ChildItem -Path '.wwebjs_auth' -Filter 'SingletonLock' -Recurse | Remove-Item -Force -ErrorAction SilentlyContinue; Write-Host 'Arquivos SingletonLock removidos! Se o erro persistir, feche o Chrome manualmente.'\"",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
