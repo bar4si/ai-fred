@@ -33,7 +33,7 @@ if (fs.existsSync(commandsPath)) {
  * Analisa e executa um comando ou palavra-chave.
  * @param {object} msg 
  */
-async function handleCommand(msg) {
+async function handleCommand(msg, botId, bots, db) {
     const body = msg.body.trim().toLowerCase();
 
     // 1. Verificar Comandos com Prefixos (/)
@@ -43,7 +43,7 @@ async function handleCommand(msg) {
         if (executeFn) {
             await delay(500, 1500);
             await simulateTyping(msg, 2000);
-            await executeFn(msg, args);
+            await executeFn(msg, args, botId, bots, db);
             return true;
         }
     }
@@ -53,7 +53,7 @@ async function handleCommand(msg) {
     if (keywordFn) {
         await delay(500, 1500);
         await simulateTyping(msg, 1500);
-        await keywordFn(msg);
+        await keywordFn(msg, botId, bots, db);
         return true;
     }
 

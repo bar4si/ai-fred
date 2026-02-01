@@ -15,7 +15,8 @@ async function transcribeAudio(base64Data, mimeType) {
             throw new Error('GEMINI_API_KEY não configurada no .env');
         }
 
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const modelName = process.env.GEMINI_MODEL || "gemini-1.5-flash";
+        const model = genAI.getGenerativeModel({ model: modelName });
 
         const prompt = "Transcreva este áudio para texto. Se for uma mensagem de voz, apenas escreva o que foi dito de forma literal. Se houver ruído ou não for possível entender, avise.";
 
@@ -43,7 +44,8 @@ async function transcribeAudio(base64Data, mimeType) {
  */
 async function generateChatResponse(userPrompt) {
     try {
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const modelName = process.env.GEMINI_MODEL || "gemini-1.5-flash";
+        const model = genAI.getGenerativeModel({ model: modelName });
         const result = await model.generateContent(userPrompt);
         const response = await result.response;
         return response.text();

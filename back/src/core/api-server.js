@@ -1,6 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 
+const { getDatabaseStats } = require('./database');
+
 /**
  * Inicia o servidor de API para controle remoto dos bots.
  * 
@@ -15,14 +17,18 @@ function startApiServer(bots, db) {
     app.use(express.json());
 
     // Endpoint: Listar todos os bots e seus status
-    app.get('/status', (req, res) => {
-        const status = Object.keys(bots).map(id => ({
-            id,
-            status: bots[id].status,
-            messages: bots[id].lastStats.messages,
-            contacts: bots[id].lastStats.contacts,
-            adminOnly: bots[id].adminOnly,
-            hasQr: !!bots[id].qr
+    app.get('/status', async (req, res) => {
+        const status = await Promise.all(Object.keys(bots).map(async (id) => {
+            const stats = await getDatabaseStats(db, id);
+            return {
+                id,
+                status: bots[id].status,
+                messages: stats.messages,
+                contacts: stats.contacts,
+                adminOnly: bots[id].adminOnly,
+                transcriptionEnabled: bots[id].transcriptionEnabled,
+                hasQr: !!bots[id].qr
+            };
         }));
         res.json(status);
     });
@@ -68,6 +74,9 @@ function startApiServer(bots, db) {
 
     app.listen(port, () => {
         console.log(`🌐 [API] Servidor rodando na porta ${port}`);
+        console.log(`   🔸 GET  /status        - Lista status de todos os bots`);
+        console.log(`   🔸 GET  /qr/:botId     - Obtém QR Code de um bot`);
+        console.log(`   🔸 POST /send-message  - Envia mensagem manual`);
     });
 }
 

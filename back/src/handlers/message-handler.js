@@ -29,7 +29,7 @@ async function handleMessage(msg, botId, bots, db) {
     }
 
     // 2. Command & Interaction Detection (Prefixed or Keywords)
-    const isHandled = await handleCommand(msg);
+    const isHandled = await handleCommand(msg, botId, bots, db);
     if (isHandled) return;
 
     // 3. Audio Detection (Google Gemini Transcription)
@@ -39,6 +39,12 @@ async function handleMessage(msg, botId, bots, db) {
             const media = await msg.downloadMedia();
 
             if (media && (media.mimetype.includes('audio') || media.mimetype.includes('ogg'))) {
+                // Verificar se a transcrição está habilitada para este bot
+                if (!bots[botId].transcriptionEnabled) {
+                    console.log(`[Audio] [${botId}] Transcrição ignorada (desativada).`);
+                    return;
+                }
+
                 await delay(500, 1000);
                 await simulateTyping(msg, 3000);
 

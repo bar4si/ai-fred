@@ -25,9 +25,18 @@ async function setupDatabase() {
     await db.exec(`
         CREATE TABLE IF NOT EXISTS bot_settings (
             bot_id TEXT PRIMARY KEY,
-            admin_only INTEGER DEFAULT 0
+            admin_only INTEGER DEFAULT 0,
+            transcription_enabled INTEGER DEFAULT 0
         )
     `);
+
+    // Migração manual: Garantir que a coluna existe se a tabela já foi criada antes
+    try {
+        await db.exec('ALTER TABLE bot_settings ADD COLUMN transcription_enabled INTEGER DEFAULT 0');
+        console.log('✅ Migração: Coluna transcription_enabled adicionada.');
+    } catch (err) {
+        // Se a coluna já existia, o SQLite retornará erro, o que é seguro ignorar aqui
+    }
 
     // 3. Tabela de Contatos
     await db.exec(`

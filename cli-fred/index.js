@@ -22,7 +22,6 @@ async function main() {
                 choices: [
                     { name: '📊 Ver Status dos Bots', value: 'status' },
                     { name: '✉️  Enviar Mensagem Manual', value: 'send' },
-                    { name: '🔄 Atualizar', value: 'refresh' },
                     { name: '❌ Sair', value: 'exit' }
                 ]
             }
@@ -35,8 +34,6 @@ async function main() {
                 await showStatus();
             } else if (action === 'send') {
                 await sendMessage();
-            } else if (action === 'refresh') {
-                console.log(chalk.yellow('Atualizando dados...'));
             }
         } catch (err) {
             console.error(chalk.red('\n❌ Erro de conexão com a API:'), err.message);
@@ -60,7 +57,10 @@ async function showStatus() {
         let statusColor = bot.status.includes('Online') ? chalk.green : chalk.yellow;
         if (bot.status.includes('❌')) statusColor = chalk.red;
 
-        console.log(`${chalk.blue(`[${bot.id}]`)} ${statusColor(bot.status)} | 📊 ${bot.contacts} ctt, ${bot.messages} msg`);
+        const privacyLabel = bot.adminOnly ? chalk.red('[PRIVATE]') : chalk.cyan('[PUBLIC]');
+        const audioLabel = bot.transcriptionEnabled ? chalk.magenta('[🎙️ ON]') : chalk.gray('[🎙️ OFF]');
+
+        console.log(`${chalk.blue(`[${bot.id}]`)} ${statusColor(bot.status)} ${privacyLabel} ${audioLabel} | 📊 ${bot.contacts} ctt, ${bot.messages} msg`);
         if (bot.hasQr) {
             console.log(chalk.magenta(`   🔗 QR Code disponível em: ${API_URL}/qr/${bot.id}`));
         }

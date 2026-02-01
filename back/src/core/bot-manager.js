@@ -28,6 +28,7 @@ async function initializeBot(botId, database, ProviderClass) {
         status: 'Iniciando...',
         lastStats: { messages: 0, contacts: 0 },
         adminOnly: (await getBotSetting(db, botId, 'admin_only', 0)) === 1,
+        transcriptionEnabled: (await getBotSetting(db, botId, 'transcription_enabled', 0)) === 1,
         qr: null
     };
 
