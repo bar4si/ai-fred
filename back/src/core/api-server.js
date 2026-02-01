@@ -79,9 +79,25 @@ function startApiServer(bots, db, initFn) {
         }
 
         try {
-            // Utilizamos o provider diretamente para enviar a mensagem
-            await bot.provider.client.sendMessage(`${to}@c.us`, message);
-            res.json({ success: true, message: 'Mensagem enviada com sucesso' });
+            // Limpar o número (remover caracteres não numéricos)
+            const cleanNumber = to.replace(/\D/g, '');
+
+            // Tentar resolver o JID canônico (isso ajuda com o 9 extra e IDs internos como LID)
+            let formattedJid = `${cleanNumber}@c.us`;
+
+            try {
+                const numberId = await bot.provider.client.getNumberId(cleanNumber);
+                if (numberId) {
+                    formattedJid = numberId._serialized;
+                }
+            } catch (resolveErr) {
+                console.warn(`[API] [${botId}] Não foi possível validar o número ${cleanNumber}, tentando envio direto.`);
+            }
+
+            console.log(`[API] [${botId}] Enviando mensagem para: ${formattedJid}`);
+            await bot.provider.client.sendMessage(formattedJid, message);
+
+            res.json({ success: true, message: 'Mensagem enviada com sucesso', sentTo: formattedJid });
         } catch (err) {
             console.error(`[API] Erro ao enviar mensagem via ${botId}:`, err);
             res.status(500).json({ error: 'Erro ao enviar mensagem', detail: err.message });

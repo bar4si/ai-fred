@@ -91,6 +91,9 @@ cd cli-fred
 node index.js
 ```
 
+### 🌍 Deployment
+For hosting on a VPS (Oracle Cloud, DigitalOcean, etc.), follow our [Deployment Guide](./docs/deploy.md).
+
 ---
 
 ## 8. Advanced Roadmap
