@@ -37,17 +37,26 @@ Este arquivo rastreia o progresso técnico do bot AI-Fred.
 8.  **🛒 Lista de Compras Compartilhada:** Comando para adicionar/remover itens de uma lista persistente.
 9.  **🎲 Sorteador Avançado:** `/sorteio "Item 1, Item 2, Item 3"` para escolher um vencedor aleatoriamente.
 10. **🛡️ Gerador de Identidade:** `/fake` para gerar dados de teste (nome, CPF fictício, endereço) para desenvolvedores.
+11. **🎓 Assistente Educacional:** Fluxo de criação e coleta interativa de questionários para alunos, com salvamento automático de respostas.
 
 ---
 
-## 🧠 Fase 3: Inteligência Artificial (Futuro)
-- [ ] Integração com a API do Google Gemini.
-- [ ] Implementação de lógica de contexto (Sessions).
-- [ ] Definição de personas e "system prompts".
+---
+
+## 🧠 Fase 3: Inteligência Artificial
+- [x] Integração com a API do Google Gemini (`gemini-1.5-flash`).
+- [x] Comando `/fred` para interação em linguagem natural.
+- [x] Tratamento de erros de API (Trimming de modelo e validação de chaves).
+- [ ] Implementação de memória de longo prazo por contato.
 
 ---
 
-## 🚀 Fase 4: Recursos Avançados
-- [ ] Suporte a mídias (Fotos/Áudios).
-- [ ] Dashboard de monitoramento simples.
+## 🚀 Fase 4: Recursos Avançados & Controle
+- [x] **API REST Integrada:** Servidor Express para controle remoto dos bots.
+- [x] **Cliente Console (CLI):** Interface interativa para monitoramento e gestão.
+- [x] **Multi-Bot:** Suporte completo para múltiplas sessões simultâneas.
+- [x] **Segurança:** Implementação de `API_KEY` para comunicação backend/CLI.
+- [x] **Suporte a Áudio:** Sistema de transcrição automática de voz (ajustável por comando).
+- [x] **Gestão Remota:** Criação de sessões e visualização de QR Code direto pelo CLI.
 - [ ] Empacotamento via Docker.
+- [ ] Interface Web (Frontend) completa.

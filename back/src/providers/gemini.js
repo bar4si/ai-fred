@@ -44,7 +44,7 @@ async function transcribeAudio(base64Data, mimeType) {
  */
 async function generateChatResponse(userPrompt) {
     try {
-        const modelName = process.env.GEMINI_MODEL || "gemini-1.5-flash";
+        const modelName = (process.env.GEMINI_MODEL || "gemini-1.5-flash").trim();
         const model = genAI.getGenerativeModel({ model: modelName });
         const result = await model.generateContent(userPrompt);
         const response = await result.response;

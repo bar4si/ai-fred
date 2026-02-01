@@ -10,6 +10,7 @@ module.exports = {
             `*/sticker* - Cria figurinha de uma imagem (use na legenda ou responda a uma foto).\n` +
             `*/clima [cidade]* - Consulta o clima atual.\n` +
             `*/resumo* - Gera um resumo das mensagens recentes.\n` +
+            `*/fred [pergunta]* - Conversa com a IA (Google Gemini).\n` +
             `*/audio [on/off]* - Ativa/desativa transcrição automática.\n` +
             `*/ajuda* - Mostra esta lista.`;
         await msg.reply(helpText);
