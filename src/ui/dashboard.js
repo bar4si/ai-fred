@@ -38,9 +38,9 @@ async function showGlobalDashboard(bots, db, initializeBot, showBotMenu) {
             const stats = await getDatabaseStats(db, id);
             const mem = bot.provider.getMemoryUsage();
 
-            const idLabel = `[${id}]`.padEnd(12);
+            const idLabel = `[${id}]`.padEnd(10);
             const statusLabel = bot.status.padEnd(20);
-            const statsLabel = `${stats.contacts} ctt, ${stats.messages} msg`.padEnd(18);
+            const statsLabel = `${stats.contacts} ctt, ${stats.messages} msg`.padEnd(20);
 
             console.log(`${i + 1}. ${idLabel} ${statusLabel} | 📊 ${statsLabel} | 💾 RAM: ${formatMemory(mem)}`);
         }
