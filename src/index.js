@@ -39,7 +39,7 @@ async function start() {
     if (sessions.length > 0) {
         console.log(`📦 Carregando ${sessions.length} sessões...`);
         for (const s of sessions) {
-            await initializeBot(s, db);
+            await initializeBot(s, db, SelectedProvider);
         }
     }
 

@@ -51,8 +51,8 @@ async function handleCommand(msg) {
     // 2. Verificar Palavras-chave (Sem prefixo)
     const keywordFn = keywords[body];
     if (keywordFn) {
-        // A lógica de simulação e delay pode ser interna ao comando se desejado,
-        // mas mantemos aqui para consistência global.
+        await delay(500, 1500);
+        await simulateTyping(msg, 1500);
         await keywordFn(msg);
         return true;
     }
