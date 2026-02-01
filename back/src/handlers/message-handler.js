@@ -13,7 +13,21 @@ async function handleMessage(msg, botId, bots, db) {
     // Ignore updates that are not individual chats (group announcements, status, etc)
     if (!chatId || !chatId.endsWith('@c.us')) return;
 
-    // 1. Database Persistence
+    // 1. Admin Restriction (Privacy Mode)
+    // Se o bot estiver em modo privado, ignoramos mensagens de terceiros
+    // EXCEÇÃO: Permitimos se o usuário estiver em uma partida ativa de Jogo da Velha
+    const isAdminOnly = bots[botId].adminOnly;
+    const info = provider.getInfo();
+    const isOwner = msg.fromMe || (info && msg.from === (info.wid?._serialized || info.me?._serialized));
+
+    const { getGame } = require('../core/game-engine');
+    const hasActiveGame = !!getGame(botId, chatId);
+
+    if (isAdminOnly && !isOwner && !hasActiveGame) {
+        return;
+    }
+
+    // 2. Database Persistence
     try {
         if (!msg.fromMe) {
             const contact = await msg.getContact();
@@ -29,17 +43,19 @@ async function handleMessage(msg, botId, bots, db) {
         // Silently fail DB errors during chat
     }
 
-    // 2. Command & Interaction Detection (Prefixed or Keywords)
-    const isHandled = await handleCommand(msg, botId, bots, db);
-    if (isHandled) return;
+    // 3. Command & Interaction Detection (Apenas Dono se estiver em modo privado)
+    if (isOwner || !isAdminOnly) {
+        const isHandled = await handleCommand(msg, botId, bots, db);
+        if (isHandled) return;
+    }
 
-    // 3. Game & Interaction State Handlers
-    // Verifica se o usuário está em uma partida de Jogo da Velha
+    // 4. Game & Interaction State Handlers
+    // Permitido para oponentes em partidas ativas mesmo em modo privado
     const { handleMove: handleVelhaMove } = require('./commands/velha');
     if (await handleVelhaMove(msg, botId, bots)) return;
 
-    // 3. Audio Detection (Google Gemini Transcription)
-    if (msg.type === 'ptt' || msg.type === 'audio') {
+    // 5. Audio Detection (Apenas Dono ou se não for privado)
+    if ((isOwner || !isAdminOnly) && (msg.type === 'ptt' || msg.type === 'audio')) {
         try {
             console.log(`[Audio] Baixando áudio de ${chatId}...`);
             const media = await msg.downloadMedia();
@@ -63,16 +79,6 @@ async function handleMessage(msg, botId, bots, db) {
         } catch (err) {
             console.error('[Audio] Erro no fluxo de transcrição:', err.message);
         }
-        return;
-    }
-
-    // 4. Admin Restriction (Privacy Mode)
-    // O MessageHandler ainda cuida das restrições de privacidade globais
-    const isAdminOnly = bots[botId].adminOnly;
-    const info = provider.getInfo();
-
-    // Ignore message if adminOnly is on and user is not owner
-    if (isAdminOnly && !msg.fromMe && info && msg.from !== info.wid._serialized) {
         return;
     }
 }
