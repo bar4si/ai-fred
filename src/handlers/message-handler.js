@@ -7,7 +7,7 @@ const { simulateTyping, delay } = require('../utils/humanizer');
  * Determines if a message should be handled by a command, AI transcription, or general response.
  */
 async function handleMessage(msg, botId, bots, db) {
-    const client = bots[botId].client;
+    const provider = bots[botId].provider;
     const chatId = msg.fromMe ? msg.to : msg.from;
 
     // Ignore updates that are not individual chats (group announcements, status, etc)
@@ -64,7 +64,8 @@ async function handleMessage(msg, botId, bots, db) {
 
     // 5. Admin Restriction (Privacy Mode)
     const isAdminOnly = bots[botId].adminOnly;
-    if (isAdminOnly && !msg.fromMe && msg.from !== client.info.wid._serialized) {
+    const info = provider.getInfo();
+    if (isAdminOnly && !msg.fromMe && info && msg.from !== info.wid._serialized) {
         return;
     }
 

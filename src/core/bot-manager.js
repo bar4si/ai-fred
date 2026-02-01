@@ -1,60 +1,75 @@
-const { createClient } = require('../providers/whatsapp-client');
 const { getBotSetting, cleanupDatabase } = require('./database');
 const { handleMessage } = require('../handlers/message-handler');
 
+/**
+ * Registro Global de Bots ativos.
+ */
 const bots = {};
 let db;
 
 /**
- * Initializes a bot instance and sets up event listeners.
- * @param {string} botId 
+ * Inicializa uma instância de bot utilizando Injeção de Dependência.
+ * 
+ * @param {string} botId Identificador único da sessão.
+ * @param {object} database Instância do banco de dados SQLite.
+ * @param {Function} ProviderClass A classe/construtor do provedor (Ex: WWebJSProvider).
+ *                               Esta é a peça chave da Injeção de Dependência.
  */
-async function initializeBot(botId, database) {
+async function initializeBot(botId, database, ProviderClass) {
     if (bots[botId]) return;
     db = database;
 
-    const client = createClient(botId);
+    // INJEÇÃO: Criamos a instância do provedor que foi passado por argumento.
+    // Isso permite trocar whatsapp-web.js por API Oficial sem mudar este arquivo.
+    const provider = new ProviderClass(botId);
 
     bots[botId] = {
-        client,
+        provider,
         status: 'Iniciando...',
         lastStats: { messages: 0, contacts: 0 },
         adminOnly: (await getBotSetting(db, botId, 'admin_only', 0)) === 1,
         qr: null
     };
 
-    // Event Handlers
-    client.on('qr', (qr) => {
+    // Escutando eventos padronizados do contrato de Provedor
+    provider.on('qr', (qr) => {
         bots[botId].status = 'Aguardando QR Code 📱';
         bots[botId].qr = qr;
     });
 
-    client.on('authenticated', () => {
+    provider.on('authenticated', () => {
         bots[botId].status = 'Autenticado! ✨';
         bots[botId].qr = null;
     });
 
-    client.on('loading_screen', (percent) => {
+    provider.on('loading_screen', (percent) => {
         bots[botId].status = `Carregando (${percent}%) ⏳`;
     });
 
-    client.on('ready', () => {
+    provider.on('ready', () => {
         bots[botId].status = 'Online ✅';
         bots[botId].qr = null;
         cleanupDatabase(db, botId);
     });
 
-    client.on('disconnected', () => {
+    provider.on('disconnected', () => {
         bots[botId].status = 'Desconectado ❌';
     });
 
-    client.on('message_create', async (msg) => {
+    // O BotManager apenas repassa a mensagem para o handler
+    provider.on('message', async (msg) => {
+        // Adaptamos o objeto bots para o handler se necessário, 
+        // mas aqui mantemos a compatibilidade.
         await handleMessage(msg, botId, bots, db);
     });
 
-    client.initialize();
+    // Inicia o processo de conexão do provedor
+    provider.initialize();
 }
 
+/**
+ * Retorna o registro de bots ativos.
+ */
 const getBots = () => bots;
 
 module.exports = { initializeBot, getBots };

@@ -12,8 +12,19 @@ async function start() {
     const db = await setupDatabase();
     const bots = getBots();
 
+    /**
+     * 💡 INJEÇÃO DE DEPENDÊNCIA:
+     * Para trocar o provedor de WhatsApp, basta alterar a constante abaixo.
+     * - WWebJSProvider: Usa whatsapp-web.js (simulação de navegador)
+     * - OfficialAPIProvider: Usa a API Cloud da Meta (requer Webhook e Token)
+     */
+    const WWebJSProvider = require('./providers/wwebjs-provider');
+    // const OfficialAPIProvider = require('./providers/official-api-provider');
+
+    const SelectedProvider = WWebJSProvider; // Altere aqui para OfficialAPIProvider se desejar
+
     // 2. Orquestrador de UI (funções circulares resolvidas via injeção)
-    const initFn = (id) => initializeBot(id, db);
+    const initFn = (id) => initializeBot(id, db, SelectedProvider);
     const dashboardFn = () => showGlobalDashboard(bots, db, initFn, menuFn);
     const menuFn = (id) => showBotMenu(id, bots, db, rl, dashboardFn);
 

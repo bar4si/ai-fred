@@ -41,7 +41,8 @@ async function showBotMenu(botId, bots, db, rl, showGlobalDashboard) {
             case '2':
                 const msgs = await listMessages(db, botId);
                 console.log('\n📊 ÚLTIMAS MENSAGENS:');
-                const profileName = bot.client.info ? bot.client.info.pushname : 'Fred';
+                const info = bot.provider.getInfo();
+                const profileName = info ? info.pushname : 'Fred';
                 msgs.forEach(m => {
                     const contact = m.contact_name ? `${m.contact_name} (${m.from_number})` : m.from_number;
                     const direction = m.is_from_me ? `🔹 [${profileName}] -> ${contact}` : `${contact} -> 🔹 [${profileName}]`;
@@ -50,7 +51,8 @@ async function showBotMenu(botId, bots, db, rl, showGlobalDashboard) {
                 break;
             case '3':
                 console.log('\n📡 STATUS:');
-                if (bot.client.info) console.log(`- Nome: ${bot.client.info.pushname}\n- Número: ${bot.client.info.wid.user}`);
+                const botInfo = bot.provider.getInfo();
+                if (botInfo) console.log(`- Nome: ${botInfo.pushname}\n- Número: ${botInfo.wid.user}`);
                 else console.log('- Bot ainda não está pronto.');
                 break;
             case '4':
